@@ -264,15 +264,15 @@ var joliCreator = function() {
             var q = new joli.query().destroy().from(this.table);
 
             if (joli.getType(id) === 'number') {
-                q.where('id = ?', id);
+                q.where('_id = ?', id);
             } else if (joli.getType(id) === 'array') {
-                q.whereIn('id', id);
+                q.whereIn('_id', id);
             }
 
             return q.execute();
         },
         exists: function(id) {
-            var count = new joli.query().count().from(this.table).where('id = ?', id).execute();
+            var count = new joli.query().count().from(this.table).where('_id = ?', id).execute();
             return (count > 0);
         },
         findBy: function(field, value) {
@@ -326,10 +326,10 @@ var joliCreator = function() {
             }
 
             var q = new joli.query();
-
+            
             if (data.originalData) {
                 // existing record
-                q.update(this.table).set(data.data).where('id = ?', data.originalData.id);
+                q.update(this.table).set(data.data).where('_id = ?', data.originalData._id);
             } else {
                 // new record
                 q.insertInto(this.table).values(data.data);
@@ -367,10 +367,13 @@ var joliCreator = function() {
         initialize: function() {
             joli.each(this.models, function(model, modelName) {
                 var columns = [];
+                
+                columns.push('_id INTEGER PRIMARY KEY AUTOINCREMENT');                
 
                 joli.each(model.options.columns, function(type, name) {
                     columns.push(name + ' ' + type);
                 });
+                
                 var query = 'CREATE TABLE IF NOT EXISTS ' + modelName + ' (' + columns.join(', ') + ')';
                 joli.connection.execute(query);
             });
@@ -715,16 +718,16 @@ var joliCreator = function() {
 
     joli.record.prototype = {
         destroy: function() {
-            if (!this.id) {
+            if (!this._id) {
                 throw ("Unsaved record cannot be destroyed");
             } else {
-                this._options.table.deleteRecords(this.id);
+                this._options.table.deleteRecords(this._id);
             }
         },
         fromArray: function(data) {
-            if (data.id) {
+            if (data._id) {
                 this._originalData = {
-                    id: data.id
+                    _id: data._id
                 };
                 this.isNew = function() {
                     return false;
@@ -756,7 +759,7 @@ var joliCreator = function() {
                 return false;
             }
 
-            return !(this.id && joli.toQueryString(this._data) === joli.toQueryString(this._originalData));
+            return !(this._id && joli.toQueryString(this._data) === joli.toQueryString(this._originalData));
         },
         save: function() {
             var data = {
@@ -770,8 +773,8 @@ var joliCreator = function() {
             } else if (this.isNew()) {
                 var rowid = this._options.table.save(data);
 
-                if (!data.id) {
-                    this._data.id = rowid;
+                if (!data._id) {
+                    this._data._id = rowid;
                 }
             }
 
