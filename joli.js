@@ -275,8 +275,13 @@ var joliCreator = function() {
             var count = new joli.query().count().from(this.table).where('_id = ?', id).execute();
             return (count > 0);
         },
-        findBy: function(field, value) {
-            return new joli.query().select().from(this.table).where(field + ' = ?', value).execute();
+        findBy: function(field, value, options) {
+            var query = new joli.query().select().from(this.table).where(field + ' = ?', value);
+            alert(options)
+            if (typeof options !== "undefined")
+              if (options.order) query = query.order(options.order);
+              
+            return query.execute();
         },
         findById: function(value) {
             return this.findBy('id', value);
