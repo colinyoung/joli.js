@@ -277,7 +277,6 @@ var joliCreator = function() {
         },
         findBy: function(field, value, options) {
             var query = new joli.query().select().from(this.table).where(field + ' = ?', value);
-            alert(options)
             if (typeof options !== "undefined")
               if (options.order) query = query.order(options.order);
               
